@@ -526,6 +526,8 @@ namespace yrewind
 
             code = UseBrowser_AudioSegment(out string segment);
             if (code != 0) return code;
+            code = UseBrowser_VideoSegment();
+            if (code != 0) return code;
 
             // Parse audio segment as text - get sequence number, duration and UTC time
             int curSeq;
@@ -618,9 +620,10 @@ namespace yrewind
             var browser = "chrome";
             var pathNetlog = Path.GetTempPath() +
                 Constants.Name + "~" + Constants.RandomString + ".tmp";
+            var pathPng = pathNetlog + ".png";
             var args = Constants.UrlStream.Replace("[stream_id]", Id) + "&autoplay=1" +
                 " --headless --disable-extensions --disable-gpu --mute-audio --no-sandbox" +
-                " --autoplay-policy=no-user-gesture-required --log-net-log=\"" + pathNetlog + "\"";
+                " --autoplay-policy=no-user-gesture-required --window-size=1280,768 --screenshot=\"" + text3 + "\" --log-net-log=\"" + pathNetlog + "\"";
             int attempt = Constants.NetworkAttemptsNumber * 2;
 
             while (attempt-- > 0)
@@ -701,8 +704,51 @@ namespace yrewind
             {
                 return 9235; // "Unable to access temporary data"
             }
+            if (segment.ToLower().Contains("https://"))
+            {
+                UriAdirect = segment.Trim();
+                return this.UseBrowser_AudioSegment(out segment);
+            }
 
             if (CLInput.Log) Program.Log("s", "segmentA", segment);
+
+            return 0;
+        }
+        #endregion
+
+        #region UseBrowser_VideoSegment - Get content of video segment
+        int UseBrowser_VideoSegment()
+        {
+            string segment = string.Empty;
+            string segmentPath = Path.GetTempPath() +
+                Constants.Name + "~" + Constants.RandomString + ".tmp";
+
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    wc.DownloadFile(new Uri(UriVdirect), segmentPath);
+                }
+            }
+            catch
+            {
+                return 9234; // "Cannot get live stream information"
+            }
+
+            try
+            {
+                segment = File.ReadAllText(segmentPath);
+                File.Delete(segmentPath);
+            }
+            catch
+            {
+                return 9235; // "Unable to access temporary data"
+            }
+            if (segment.ToLower().Contains("https://"))
+            {
+                UriVdirect = segment.Trim();
+                return this.UseBrowser_VideoSegment();
+            }
 
             return 0;
         }

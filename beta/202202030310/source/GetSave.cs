@@ -239,7 +239,8 @@ namespace yrewind
                 if (reqUri.EndsWith("a.m3u8"))
                 {
                     content = lineA.Replace("[secNumber]", seqNumberA.ToString());
-                    if (++seqNumberA == seqStop) content += "#EXT-X-ENDLIST\n";
+                    if (seqNumberA + 1 >= seqStop) content += "#EXT-X-ENDLIST\n";
+                    else seqNumberA++;
 
                     if (!realtime)
                     {
@@ -251,7 +252,8 @@ namespace yrewind
                 else if (reqUri.EndsWith("v.m3u8"))
                 {
                     content = lineV.Replace("[secNumber]", seqNumberV.ToString());
-                    if (++seqNumberV == seqStop) content += "#EXT-X-ENDLIST\n";
+                    if (seqNumberV + 1 >= seqStop) content += "#EXT-X-ENDLIST\n";
+                    else seqNumberV++;
 
                     if (CLInput.Log) Program.Log("v", "contentV", content.Replace("\n", "~"));
                 }
